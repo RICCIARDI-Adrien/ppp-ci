@@ -1,4 +1,4 @@
-name: Generate prebuilt images
+name: Generate prebuilt images bnbnbnb
 on: [push, pull_request]
 
 jobs:
@@ -10,22 +10,21 @@ jobs:
         libc_name: [glibc, uclibc, musl]
     env:
       BUILDROOT_DIRECTORY_NAME: /home/runner/buildroot-${{ matrix.defconfig_name }}-${{ matrix.libc_name }}
+    permissions:
+      contents: write
     steps:
       - name: Retrieve CI scripts
         uses: actions/checkout@v3
-      - name: Run build script
+      - name: bof
         run: |
-          bash -x ${{ github.workspace }}/build-buildroot.sh ${{ matrix.defconfig_name }} ${{ matrix.libc_name }} /home/runner
-      - name: Archive image
-        run: |
-          tar -c ${{ env.BUILDROOT_DIRECTORY_NAME }} -f ${{ env.BUILDROOT_DIRECTORY_NAME }}.tar
-      - name: Compress image
-        run: |
-          zstd -T0 -19 --rm -v ${{ env.BUILDROOT_DIRECTORY_NAME }}.tar
+            echo bonjour > ${{ env.BUILDROOT_DIRECTORY_NAME }}.tar.zst
       - name: Deploy image to repository release
+        if: startsWith(github.ref, 'refs/tags')
         uses: svenstaro/upload-release-action@v2
         with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.BUILDROOT_DIRECTORY_NAME }}.tar.zst
+          tag: ${{ github.ref_name }}
           overwrite: true
           prerelease: true
           release_name: Continuous deployment
